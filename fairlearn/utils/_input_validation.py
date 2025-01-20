@@ -44,6 +44,7 @@ def _validate_and_reformat_input(
     expect_y=True,
     expect_sensitive_features=True,
     enforce_binary_labels=False,
+    allow_nd=False,
     **kwargs,
 ):
     """Validate input data and return the data in an appropriate format.
@@ -65,6 +66,9 @@ def _validate_and_reformat_input(
     enforce_binary_labels : bool
         If True raise exception if there are more than two distinct
         values in the `y` data; default False
+    allow_nd : bool
+        If True, allow input features to be something else than a 2D array. This
+        is important if you have an image classifier; default False
 
     Returns
     -------
@@ -84,14 +88,14 @@ def _validate_and_reformat_input(
             y = y.to_numpy().reshape(-1)
 
         # Using an adapted version of check_array to avoid a warning in sklearn version < 1.6
-        X = check_array(X, dtype=None, ensure_all_finite=False)
+        X = check_array(X, dtype=None, ensure_all_finite=False, allow_nd=allow_nd)
         y = check_array(y, ensure_2d=False, dtype="numeric", ensure_all_finite=False)
         if enforce_binary_labels and not set(np.unique(y)).issubset(set([0, 1])):
             raise ValueError(_LABELS_NOT_0_1_ERROR_MESSAGE)
     elif expect_y:
         raise ValueError(_MESSAGE_Y_NONE)
     else:
-        X = check_array(X, dtype=None, ensure_all_finite=False)
+        X = check_array(X, dtype=None, ensure_all_finite=False, allow_nd=allow_nd)
 
     sensitive_features = kwargs.get(_KW_SENSITIVE_FEATURES)
     if sensitive_features is not None:
@@ -126,7 +130,9 @@ def _validate_and_reformat_input(
         result_y = pd.Series(dtype="float64")
 
     return (
-        pd.DataFrame(X),
+        # FIXME: This is a temporary fix to avoid a warning from pandas
+        # pd.DataFrame(X),
+        X,
         result_y,
         sensitive_features,
         control_features,

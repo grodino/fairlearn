@@ -139,6 +139,7 @@ class InterpolatedThresholder(MetaEstimatorMixin, BaseEstimator):
             sensitive_features=sensitive_features,
             expect_y=True,
             enforce_binary_labels=False,
+            allow_nd=True,
         )
 
         positive_probs = 0.0 * base_predictions_vector
@@ -153,7 +154,7 @@ class InterpolatedThresholder(MetaEstimatorMixin, BaseEstimator):
                 )
             positive_probs[sensitive_feature_vector == a] = interpolated_predictions[
                 sensitive_feature_vector == a
-            ]
+            ].astype(np.float32)
         return np.array([1.0 - positive_probs, positive_probs]).transpose()
 
     def predict(self, X, *, sensitive_features, random_state=None):

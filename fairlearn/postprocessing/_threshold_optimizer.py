@@ -303,6 +303,7 @@ class ThresholdOptimizer(MetaEstimatorMixin, BaseEstimator):
             y,
             sensitive_features=sensitive_features,
             enforce_binary_labels=True,
+            allow_nd=True,
         )
 
         # postprocessing can't handle 0/1 as floating point numbers, so this
